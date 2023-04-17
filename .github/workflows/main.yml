@@ -1,17 +1,23 @@
-name: Super-Linter
+name : pull request
+on: # This action will trigger when an issue is reopened or opened.
+  issues:
+    types:
+      - reopened
+      - opened
+jobs: # The jobs that run in this workflow
+  label_issues: # the first job is named as label_issues
+    runs-on: ubuntu-latest # This job will run on the latest version of Ubuntu.
+    permissions: # This job requires write access to issues in order to add labels and comment.
+      issues: write
+    steps: # The "steps" section
+     - name: Create comment
+       uses: peter-evans/create-or-update-comment@v3
+       with:
+          issue-number: 1
+          body: |
+            This is a multi-line test comment
+            - With GitHub **Markdown** :sparkles:
+            - Created by [create-or-update-comment][1]
 
-on: push
-
-jobs:
-  super-lint:
-    name: Lint code base
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Run Super-Linter
-        uses: github/super-linter@v4
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            [1]: https://github.com/peter-evans/create-or-update-comment
+          reactions: '+1'
