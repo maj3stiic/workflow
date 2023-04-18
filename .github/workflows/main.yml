@@ -14,16 +14,17 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14.x'
-      - name: Add comment
-        uses: peter-evans/create-issue-comment@v1
+      - name: Add comment when issue opened
+        if: github.event.action == 'opened'
+        uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: 'Thanks for opening this issue! We will take a look soon.'
-        if: github.event.action == 'opened'
-
+          
   close_comment:
-    runs-on: ubuntu-latest
     needs: add_comment
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -31,14 +32,8 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '14.x'
-      - name: Add comment
-        uses: peter-evans/create-issue-comment@v1
+      - name: Add comment when issue closed
+        uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: 'The issue has been resolved. Thanks!'
-        if: github.event.action == 'closed'
-      - name: Checkout peter-evans/create-issue-comment
-      - uses: actions/checkout@v2
-        with:
-          repository: peter-evans/create-issue-comment
-          ref: v1
