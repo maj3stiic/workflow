@@ -1,7 +1,7 @@
 name: Label & comment issues
 on:
   issues:
-    types: [reopened, opened]
+    types: [reopened, opened, closed] # listen for when an issue is closed
 jobs:
   label_issues:
     runs-on: ubuntu-latest
@@ -39,5 +39,5 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: "The issue is now resolved by using GitHub workflows."
-          })
+            body: 'The issue is now resolved by using Mehdi's workflows.'
+          });
