@@ -1,39 +1,55 @@
-name: Add comment when issue opened/closed
+name: Label & comment issues
 
 on:
   issues:
-    types: [opened, closed]
+    types: [reopened, opened]
 
 jobs:
-  add_comment:
+  label_issues:
     runs-on: ubuntu-latest
+    permissions:
+      issues: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Node.js 16.x
-        uses: actions/setup-node@v2
+      - name: Attach labels to issues
+        uses: actions/github-script@v6
         with:
-          node-version: '16.x'
-      - name: Add comment
-        uses: peter-evans/create-or-update-comment@v2
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["issue", "fix"]
+            })
+      - name: Comment on new issue
+        uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
-          body: 'Thanks for opening this issue! We will take a look soon.'
+          body: |
+            Thanks for opening this issue! We'll take a look as soon as possible.
         if: github.event.action == 'opened'
 
-  close_comment:
+  comment_on_close:
     runs-on: ubuntu-latest
-    needs: add_comment
+    permissions:
+      issues: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Set up Node.js 16.x
-        uses: actions/setup-node@v2
-        with:
-          node-version: '16.x'
-      - name: Add comment
-        uses: peter-evans/create-or-update-comment@v2
+      - name: Comment on issue close
+        uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
-          body: 'The issue has been resolved. Thanks!'
-        if: github.event.action == 'closed'
+          body: |
+            The issue has been fixed. Thanks for reporting it!
+        if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'fix')
+
+  comment_on_pr:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment on first pull request
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Thanks for opening your first pull request! We appreciate your contribution.
+        if: github.event.action == 'opened' && github.event.pull_request.commits == 1
