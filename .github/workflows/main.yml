@@ -1,55 +1,39 @@
 name: Label & comment issues
-
 on:
   issues:
-    types: [reopened, opened]
-
+    types: [reopened, opened, closed]
 jobs:
   label_issues:
     runs-on: ubuntu-latest
     permissions:
       issues: write
     steps:
-      - name: Attach labels to issues
-        uses: actions/github-script@v6
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.4.2
         with:
-          script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ["issue", "fix"]
-            })
-      - name: Comment on new issue
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            Thanks for opening this issue! We'll take a look as soon as possible.
-        if: github.event.action == 'opened'
+          node-version: '16.x'
+      - name: Add labels and comment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${{ github.event_name }}" == "issues" ]]; then
+            issue_number="${{ github.event.issue.number }}"
+            repo_owner="${{ github.event.repository.owner.login }}"
+            repo_name="${{ github.event.repository.name }}"
+            issue_labels=$(echo "${{ github.event.issue.labels }}" | jq -r '.[].name')
 
-  comment_on_close:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-    steps:
-      - name: Comment on issue close
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            The issue has been fixed. Thanks for reporting it!
-        if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'fix')
-
-  comment_on_pr:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Comment on first pull request
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Thanks for opening your first pull request! We appreciate your contribution.
-        if: github.event.action == 'opened' && github.event.pull_request.commits == 1
+            if [[ "${{ github.event.action }}" == "closed" ]] && echo "${issue_labels}" | grep -q "fix"; then
+              gh pr list --json base:main --state=open | jq -r '.[].head.repo.full_name' | sort -u | while read repo_fullname; do
+                if echo "${repo_fullname}" | grep -qv "${repo_owner}/${repo_name}"; then
+                  body="This issue has been fixed in ${repo_fullname}."
+                  comment_url=$(gh issue comment "${issue_number}" --body "${body}" --json url | jq -r '.url')
+                  echo "::set-output name=comment_url::${comment_url}"
+                fi
+              done
+            elif [[ "${{ github.event.action }}" == "opened" ]] && [[ "${issue_labels}" == "" ]]; then
+              body="Thanks for opening this issue! We will take a look as soon as possible."
+              gh issue comment "${issue_number}" --body "${body}"
+            fi
+          fi
