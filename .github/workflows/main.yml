@@ -19,16 +19,25 @@ jobs:
               labels: ["issue", "fix"]
             })
       - name: Comment on new issue
-        uses: peter-evans/create-or-update-comment@v1
+        uses: actions/github-script@v6
         with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            Thanks for opening this issue! We'll take a look as soon as possible.
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: "Thanks for opening this issue! We'll take a look as soon as possible."
+            })
       - name: Add comment when issue is closed
-        uses: peter-evans/create-issue-comment@v1
         if: github.event.issue.state == 'closed'
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: 'The issue is now resolved by using GitHub workflows.'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          const { context, GitHub } = require('@actions/github');
+          const github = new GitHub(process.env.GITHUB_TOKEN);
+          github.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: 'The issue is now resolved by using GitHub workflows.'
+          });
