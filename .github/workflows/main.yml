@@ -1,55 +1,40 @@
-name: Label & comment issues
+name: Label & Comment Issues
 
 on:
   issues:
-    types: [reopened, opened]
+    types: [reopened, opened, closed]
 
 jobs:
-  label_issues:
+  label_issue:
     runs-on: ubuntu-latest
     permissions:
       issues: write
     steps:
-      - name: Attach labels to issues
+      - name: Attach labels to issue
         uses: actions/github-script@v6
         with:
           script: |
+            const labelsToAdd = ['issue'];
+            if (github.event.action === 'closed' && github.context.payload.issue.labels.some(label => label.name === 'fix')) {
+              labelsToAdd.push('closed');
+            } else if (github.event.action === 'opened' && github.context.payload.issue.pull_request === undefined) {
+              labelsToAdd.push('triage');
+            }
             github.rest.issues.addLabels({
-              issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ["issue", "fix"]
+              issue_number: context.issue.number,
+              labels: labelsToAdd
             })
-      - name: Comment on new issue
+      - name: Comment on issue
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            Thanks for opening this issue! We'll take a look as soon as possible.
-        if: github.event.action == 'opened'
-
-  comment_on_close:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-    steps:
-      - name: Comment on issue close
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.issue.number }}
-          body: |
-            The issue has been fixed. Thanks for reporting it!
-        if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'fix')
-
-  comment_on_pr:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Comment on first pull request
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Thanks for opening your first pull request! We appreciate your contribution.
-        if: github.event.action == 'opened' && github.event.pull_request.commits == 1
+            ${{
+              github.event.action === 'closed' && github.context.payload.issue.labels.some(label => label.name === 'fix')
+                ? 'Thanks for using this application. The issue has been resolved!'
+                : github.event.action === 'opened' && github.context.payload.issue.pull_request === undefined
+                ? 'Thanks for opening this issue! We\'ll take a look as soon as possible.'
+                : ''
+            }}
