@@ -37,3 +37,8 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: 'The issue has been resolved. Thanks!'
         if: github.event.action == 'closed'
+      - name: Checkout peter-evans/create-issue-comment
+      - uses: actions/checkout@v2
+        with:
+          repository: peter-evans/create-issue-comment
+          ref: v1
