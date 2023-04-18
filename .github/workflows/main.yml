@@ -1,43 +1,27 @@
-name: Label & comment issues
+name: Add and close issue comments
+
 on:
   issues:
-    types: [reopened, opened, closed] # listen for when an issue is closed
+    types: [opened, closed]
+
 jobs:
-  label_issues:
+  add_comment:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
-      - name: Attach labels to issues
-        uses: actions/github-script@v6
+      - name: Add comment
+        uses: peter-evans/create-issue-comment@v1
         with:
-          script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ["issue", "fix"]
-            })
-      - name: Comment on new issue
-        uses: actions/github-script@v6
+          issue-number: ${{ github.event.issue.number }}
+          body: 'Thanks for opening this issue! We will take a look soon.'
+        if: github.event.action == 'opened'
+
+  close_comment:
+    needs: add_comment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add comment
+        uses: peter-evans/create-issue-comment@v1
         with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "Thanks for opening this issue! We'll take a look as soon as possible."
-            })
-      - name: Add comment when issue is closed
-        if: github.event.issue.state == 'closed'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          const { context, GitHub } = require('@actions/github');
-          const github = new GitHub(process.env.GITHUB_TOKEN);
-          github.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: 'The issue is now resolved by using Mehdi's workflows.'
-          });
+          issue-number: ${{ github.event.issue.number }}
+          body: 'The issue has been resolved. Thanks!'
+        if: github.event.action == 'closed'
