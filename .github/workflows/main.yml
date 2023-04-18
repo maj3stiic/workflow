@@ -1,4 +1,4 @@
-name : pull request
+name: Label & comment issues #the name of the workflow
 on: # This action will trigger when an issue is reopened or opened.
   issues:
     types:
@@ -9,15 +9,24 @@ jobs: # The jobs that run in this workflow
     runs-on: ubuntu-latest # This job will run on the latest version of Ubuntu.
     permissions: # This job requires write access to issues in order to add labels and comment.
       issues: write
-    steps: # The "steps" section
-     - name: Create comment
-       uses: peter-evans/create-or-update-comment@v3
-       with:
-          issue-number: 1
-          body: |
-            This is a multi-line test comment
-            - With GitHub **Markdown** :sparkles:
-            - Created by [create-or-update-comment][1]
+    steps: # The "steps" section contains the individual tasks that will be performed in this job.
+      - name: attach label to issues # The name of the step
+        uses: actions/github-script@v6 # This step uses the "actions/github-script" action to execute a script that adds labels to the issue.
+        with:
+          script: | # The script calls the GitHub REST API to add labels to the issue.
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ["issue", "fix"]
+            })
+      - name: Comment on new issue #this is another step that comments on the issue 
+        uses: peter-evans/create-or-update-comment@v1 # This step uses the "peter-evans/create-or-update-comment" action to create or update a comment on the issue.
+        with:
+          issue-number: ${{ github.event.issue.number }} # The issue number is obtained from the context of the event that triggered the action.
+          body: | # The body of the comment is a message thanking the user for opening the issue.
+           Thanks for opening this issue! We'll take a look as soon as possible.
 
-            [1]: https://github.com/peter-evans/create-or-update-comment
-          reactions: '+1'
+# Comment on when an issue is closed
+
+# Comment on when an users opens the first pull request 
