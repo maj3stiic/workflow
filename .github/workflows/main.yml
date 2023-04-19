@@ -35,7 +35,7 @@ jobs:
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            This issue has been closed. Thank you for reporting it!
+            This issue has been closed. IWA sir t9awd!
 
       - name: Comment on new PR
         if: github.event_name == 'pull_request_target'
