@@ -1,16 +1,17 @@
-name: Label & comment issues
-
+name: Label & comment issues # The name of the workflow
 on:
   issues:
-    types: [reopened, opened]
+    types: [reopened, opened, closed] # This workflow will run when an issue is reopened, opened or closed
+  pull_request_target:
+    types: [reopened, opened] # This workflow will run when a user opens their first pull request
 
 jobs:
-  label_issues:
+  label_issues: # The job to label and comment on issues
     runs-on: ubuntu-latest
     permissions:
       issues: write
     steps:
-      - name: Attach labels to issues
+      - name: Attach label to issue
         uses: actions/github-script@v6
         with:
           script: |
@@ -21,35 +22,25 @@ jobs:
               labels: ["issue", "fix"]
             })
       - name: Comment on new issue
+        if: github.event_name == 'issues' && github.event.action == 'opened'
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
             Thanks for opening this issue! We'll take a look as soon as possible.
-        if: github.event.action == 'opened'
 
-  comment_on_close:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-    steps:
-      - name: Comment on issue close
+      - name: Comment on closed issue
+        if: github.event_name == 'issues' && github.event.action == 'closed'
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.issue.number }}
           body: |
-            The issue has been fixed. Thanks for reporting it!
-        if: github.event.action == 'closed' && contains(github.event.issue.labels.*.name, 'fix')
+            This issue has been closed. IWA sir t9awd!
 
-  comment_on_pr:
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - name: Comment on first pull request
+      - name: Comment on new PR
+        if: github.event_name == 'pull_request_target'
         uses: peter-evans/create-or-update-comment@v1
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Thanks for opening your first pull request! We appreciate your contribution.
-        if: github.event.action == 'opened' && github.event.pull_request.commits == 1
+            Congratulations on opening your first pull request! We appreciate your contribution to our project.
