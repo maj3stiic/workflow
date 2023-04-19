@@ -3,7 +3,7 @@ on:
   issues:
     types: [reopened, opened, closed] # This workflow will run when an issue is reopened, opened or closed
   pull_request_target:
-    types: [opened] # This workflow will run when a user opens their first pull request
+    types: [reopened, opened] # This workflow will run when a user opens their first pull request
 
 jobs:
   label_issues: # The job to label and comment on issues
