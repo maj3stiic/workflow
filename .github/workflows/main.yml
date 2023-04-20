@@ -37,33 +37,28 @@ jobs:
           body: |
             This issue has been closed. IWA sir t9awd!
             
-      - name: Add comment to PR
-        uses: actions/github-script@v6
-        if: always()
-        with:
-          script: |
-            const name = '${{ github.workflow   }}';
-            const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
-            const success = '${{ job.status }}' === 'success';
-            const body = `${name}: ${success ? 'succeeded ✅' : 'failed ❌'}\n${url}`;
-
-            await github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: body
-            })
-            
-  #    - name: Comment PR
-  #      uses: thollander/actions-comment-pull-request@v1
-  #      with:
-   #       message: |
-    #                    Thank you for your contribution. 
-
- #     - name: Comment on new PR
-  #      if: github.event_name == 'pull_request_target'
-  #      uses: peter-evans/create-or-update-comment@v1
+#      - name: Add comment to PR
+ #       uses: actions/github-script@v6
+  #      if: always()
    #     with:
-    #      issue-number: ${{ github.event.pull_request.number }}
-     #     body: |
-      #      Congratulations on opening your first pull request! We appreciate your contribution to our project.
+  #        script: |
+   #         const name = '${{ github.workflow   }}';
+    #        const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
+     #       const success = '${{ job.status }}' === 'success';
+      #      const body = `${name}: ${success ? 'succeeded ✅' : 'failed ❌'}\n${url}`;
+
+       #     await github.rest.issues.createComment({
+        #      issue_number: context.issue.number,
+         #     owner: context.repo.owner,
+          #    repo: context.repo.repo,
+           #   body: body
+           # })
+            
+
+      - name: Comment on new PR
+        if: github.event_name == 'pull_request_target'
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Congratulations on opening your first pull request! We appreciate your contribution to our project.
