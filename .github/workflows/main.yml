@@ -45,7 +45,7 @@ jobs:
        #   body: |
           #  Congratulations on opening your first pull request! We appreciate your contribution to our project.
       - name: Congratulate PR opener
-        uses: peter-evans/create-or-update-comment@v1.2.3
+        uses: peter-evans/create-or-update-comment@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
