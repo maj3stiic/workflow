@@ -36,18 +36,17 @@ jobs:
           issue-number: ${{ github.event.issue.number }}
           body: |
             This issue has been closed. IWA sir t9awd!
+            
+  #    - name: Comment PR
+  #      uses: thollander/actions-comment-pull-request@v1
+  #      with:
+   #       message: |
+    #                    Thank you for your contribution. 
 
-      #- name: Comment on new PR
-    #    if: github.event_name == 'pull_request_target'
-     #   uses: peter-evans/create-or-update-comment@v1
-      #  with:
-       #   issue-number: ${{ github.event.pull_request.number }}
-       #   body: |
-          #  Congratulations on opening your first pull request! We appreciate your contribution to our project.
-      - name: Congratulate PR opener
-        uses: peter-evans/create-or-update-comment@v1.2.3
+      - name: Comment on new PR
+        if: github.event_name == 'pull_request_target'
+        uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: Congrats on opening a new pull request, @${{ github.event.pull_request.user.login }}! 🎉🎊👏
+          body: |
+            Congratulations on opening your first pull request! We appreciate your contribution to our project.
