@@ -2,8 +2,8 @@ name: Label & comment issues # The name of the workflow
 on:
   issues:
     types: [reopened, opened, closed] # This workflow will run when an issue is reopened, opened or closed
-  pull_request_target:
-    types: [reopened, opened] # This workflow will run when a user opens their first pull request
+  pull_request:
+    types: [opened] # This workflow will run when a user opens their first pull request
 
 jobs:
   label_issues: # The job to label and comment on issues
@@ -37,10 +37,17 @@ jobs:
           body: |
             This issue has been closed. IWA sir t9awd!
 
-      - name: Comment on new PR
-        if: github.event_name == 'pull_request_target'
-        uses: peter-evans/create-or-update-comment@v1
+      #- name: Comment on new PR
+    #    if: github.event_name == 'pull_request_target'
+     #   uses: peter-evans/create-or-update-comment@v1
+      #  with:
+       #   issue-number: ${{ github.event.pull_request.number }}
+       #   body: |
+          #  Congratulations on opening your first pull request! We appreciate your contribution to our project.
+      - name: Congratulate PR opener
+        uses: peter-evans/create-or-update-comment@v1.2.3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Congratulations on opening your first pull request! We appreciate your contribution to our project.
+          body: Congrats on opening a new pull request, @${{ github.event.pull_request.user.login }}! 🎉🎊👏
