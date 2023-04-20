@@ -44,10 +44,17 @@ jobs:
        #   issue-number: ${{ github.event.pull_request.number }}
        #   body: |
           #  Congratulations on opening your first pull request! We appreciate your contribution to our project.
-      - name: Congratulate PR opener
+    #  - name: Congratulate PR opener
+     #   uses: peter-evans/create-or-update-comment@v1
+      #  with:
+       #   token: ${{ secrets.GITHUB_TOKEN }}
+        #  repository: ${{ github.repository }}
+         # issue-number: ${{ github.event.pull_request.number }}
+          #body: Congrats on opening a new pull request, @${{ github.event.pull_request.user.login }}! 🎉🎊👏
+          
+      - name: Comment on new pull request
         uses: peter-evans/create-or-update-comment@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: Congrats on opening a new pull request, @${{ github.event.pull_request.user.login }}! 🎉🎊👏
+          body: |
+            Congratulations on opening your first pull request! We appreciate your contribution to our project.
