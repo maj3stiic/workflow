@@ -1,7 +1,7 @@
 name: Label & comment issues # The name of the workflow
 on:
   issues:
-    types: [reopened, opened, closed] # This workflow will run when an issue is reopened, opened or closed
+    types: [reopened, closed] # This workflow will run when an issue is reopened, opened or closed
   pull_request:
     types: [opened] # This workflow will run when a user opens their first pull request
 
