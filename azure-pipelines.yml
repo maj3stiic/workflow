@@ -1,0 +1,44 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - name: 'buildConfiguration'
+    value: 'Release'
+  - group: 'MySecrets'
+
+steps:
+- script: |
+    dotnet restore
+    dotnet build --configuration $(buildConfiguration)
+  displayName: 'Build'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'test'
+    projects: '**/*Tests.csproj'
+  displayName: 'Test'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+    zipAfterPublish: true
+  displayName: 'Publish'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: '$(MySecrets.Subscription)'
+    appType: 'webAppLinux'
+    appName: 'my-web-app'
+    package: '$(Build.ArtifactStagingDirectory)/**/*.zip'
+    startUpCommand: 'dotnet my-web-app.dll'
+  displayName: 'Deploy'
